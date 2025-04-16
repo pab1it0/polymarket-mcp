@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  polymarket-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - POLYMARKET_API_URL=${POLYMARKET_API_URL:-https://clob.polymarket.com}
+      - POLYMARKET_CHAIN_ID=${POLYMARKET_CHAIN_ID:-137}
+      - POLYMARKET_PRIVATE_KEY=${POLYMARKET_PRIVATE_KEY:-}
+      - POLYMARKET_USE_AUTH=${POLYMARKET_USE_AUTH:-true}
+    stdin_open: true  # docker run -i
+    tty: true  # docker run -t
