@@ -46,7 +46,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Set environment variables for Polymarket MCP Server
 ENV PYTHONUNBUFFERED=1
 
-# when running the container, add POLYMARKET_API_URL and POLYMARKET_PRIVATE_KEY environment variables
+# when running the container, add POLYMARKET_API_URL environment variable
 ENTRYPOINT ["polymarket-mcp-server"]
 
 # Label the image

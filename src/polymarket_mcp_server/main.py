@@ -13,16 +13,10 @@ def setup_environment():
         print("WARNING: POLYMARKET_API_URL environment variable is not set")
         print("Using default API URL: https://clob.polymarket.com")
     
-    if not config.private_key and (config.use_authentication):
-        print("WARNING: POLYMARKET_PRIVATE_KEY environment variable is not set")
-        print("Authentication will not be available for private endpoints")
-        print("Set POLYMARKET_PRIVATE_KEY to your Polygon wallet private key for full functionality")
-        
     # Output configuration
     print(f"Polymarket API configuration:")
     print(f"  API URL: {config.api_url}")
     print(f"  Chain ID: {config.chain_id}")
-    print(f"  Authentication: {'Available' if config.private_key else 'Not available'}")
     
     return True
 
