@@ -14,8 +14,7 @@ from polymarket_mcp_server.server import (
     get_markets,
     get_market_by_id,
     search_markets,
-    get_order_book,
-    create_order
+    get_order_book
 )
 
 
@@ -102,41 +101,3 @@ async def test_get_order_book(mock_make_request):
     # Assertions
     mock_make_request.assert_called_once_with("/orderbook", params={"marketId": market_id})
     assert result == mock_response
-
-
-@pytest.mark.asyncio
-async def test_create_order_auth_error():
-    """Test create_order when authentication is not available."""
-    # Setup - ensure private key is not set
-    with patch('polymarket_mcp_server.server.config') as mock_config:
-        mock_config.use_authentication = True
-        mock_config.private_key = ""
-        
-        # Call function and check exception
-        with pytest.raises(ValueError, match="Authentication not available"):
-            await create_order("market_id", "outcome_id", "BUY", "1.0", "0.5")
-
-
-@pytest.mark.asyncio
-async def test_create_order_validation_error():
-    """Test create_order with invalid input parameters."""
-    # Setup - ensure private key is set for this test
-    with patch('polymarket_mcp_server.server.config') as mock_config, \
-         patch('polymarket_mcp_server.server.make_request', new_callable=AsyncMock) as mock_make_request:
-        mock_config.use_authentication = True
-        mock_config.private_key = "test_key"
-        
-        # Test with invalid side
-        with pytest.raises(ValueError, match="Side must be BUY or SELL"):
-            await create_order("market_id", "outcome_id", "INVALID", "1.0", "0.5")
-        
-        # Test with invalid price
-        with pytest.raises(ValueError, match="Price must be between 0 and 1"):
-            await create_order("market_id", "outcome_id", "BUY", "1.0", "1.5")
-        
-        # Test with invalid size
-        with pytest.raises(ValueError, match="Size must be positive"):
-            await create_order("market_id", "outcome_id", "BUY", "-1.0", "0.5")
-
-        # Ensure the mock was never called
-        mock_make_request.assert_not_called()

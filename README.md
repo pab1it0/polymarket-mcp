@@ -2,7 +2,7 @@
 
 A [Model Context Protocol][mcp] (MCP) server for Polymarket prediction markets platform.
 
-This provides access to Polymarket's prediction markets, trading capabilities, and market data through standardized MCP interfaces, allowing AI assistants to query market data, place trades, and manage portfolios.
+This provides access to Polymarket's prediction markets and market data through standardized MCP interfaces, allowing AI assistants to query market data and analyze prediction markets.
 
 [mcp]: https://modelcontextprotocol.io
 
@@ -16,30 +16,14 @@ This provides access to Polymarket's prediction markets, trading capabilities, a
   - [x] View recent trades
   - [x] Get historical market data
 
-- [x] Trading capabilities (with authentication)
-  - [x] Create buy/sell orders
-  - [x] Cancel orders
-  - [x] View user orders
-  - [x] Get portfolio positions
-
-- [x] Authentication support
-  - [x] Private key-based authentication
-  - [x] API credentials generation
-
-- [x] Docker containerization support
-
 ## Usage
 
 1. Configure the environment variables for your Polymarket access, either through a `.env` file or system environment variables:
 
 ```env
-# Required: Polymarket API configuration
+# Polymarket API configuration
 POLYMARKET_API_URL=https://clob.polymarket.com
-POLYMARKET_CHAIN_ID=137
-
-# Optional: For authentication (required for trading)
-POLYMARKET_PRIVATE_KEY=your_polygon_wallet_private_key
-POLYMARKET_USE_AUTH=true
+POLYMARKET_CHAIN_ID=137  # Polygon mainnet
 ```
 
 2. Add the server configuration to your client configuration file. For example, for Claude Desktop:
@@ -57,9 +41,7 @@ POLYMARKET_USE_AUTH=true
       ],
       "env": {
         "POLYMARKET_API_URL": "https://clob.polymarket.com",
-        "POLYMARKET_CHAIN_ID": "137",
-        "POLYMARKET_PRIVATE_KEY": "your_polygon_wallet_private_key",
-        "POLYMARKET_USE_AUTH": "true"
+        "POLYMARKET_CHAIN_ID": "137"
       }
     }
   }
@@ -88,7 +70,6 @@ You can run the server using Docker directly:
 docker run -it --rm \
   -e POLYMARKET_API_URL=https://clob.polymarket.com \
   -e POLYMARKET_CHAIN_ID=137 \
-  -e POLYMARKET_PRIVATE_KEY=your_polygon_wallet_private_key \
   polymarket-mcp-server
 ```
 
@@ -107,15 +88,11 @@ To use the containerized server with Claude Desktop, update the configuration to
         "-i",
         "-e", "POLYMARKET_API_URL",
         "-e", "POLYMARKET_CHAIN_ID",
-        "-e", "POLYMARKET_PRIVATE_KEY",
-        "-e", "POLYMARKET_USE_AUTH",
         "polymarket-mcp-server"
       ],
       "env": {
         "POLYMARKET_API_URL": "https://clob.polymarket.com",
-        "POLYMARKET_CHAIN_ID": "137",
-        "POLYMARKET_PRIVATE_KEY": "your_polygon_wallet_private_key",
-        "POLYMARKET_USE_AUTH": "true"
+        "POLYMARKET_CHAIN_ID": "137"
       }
     }
   }
@@ -185,17 +162,6 @@ pytest --cov=src --cov-report=term-missing
 | `get_recent_trades` | Market Data | Get latest trades for a market |
 | `get_market_history` | Market Data | Get historical market data |
 | `search_markets` | Market Data | Search for markets by keyword |
-| `get_account_info` | Account | Get user account information (authenticated) |
-| `get_user_orders` | Trading | Get a user's orders (authenticated) |
-| `create_order` | Trading | Create a new buy/sell order (authenticated) |
-| `cancel_order` | Trading | Cancel an existing order (authenticated) |
-| `get_portfolio` | Portfolio | Get user portfolio positions (authenticated) |
-
-## Security Considerations
-
-- **Private Keys**: Your private key is used to generate API credentials. Keep it secure and never share it.
-- **Environment Variables**: Use environment variables or `.env` files to configure sensitive information.
-- **Permissions**: The MCP server only exposes the functionalities needed. Authentication is required for trading.
 
 ## License
 
