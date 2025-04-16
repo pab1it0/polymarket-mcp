@@ -82,9 +82,7 @@ docker build -t polymarket-mcp-server .
 
 ### Running with Docker
 
-You can run the server using Docker in several ways:
-
-#### Using docker run directly:
+You can run the server using Docker directly:
 
 ```bash
 docker run -it --rm \
@@ -92,14 +90,6 @@ docker run -it --rm \
   -e POLYMARKET_CHAIN_ID=137 \
   -e POLYMARKET_PRIVATE_KEY=your_polygon_wallet_private_key \
   polymarket-mcp-server
-```
-
-#### Using docker-compose:
-
-Create a `.env` file with your Polymarket credentials and then run:
-
-```bash
-docker-compose up
 ```
 
 ### Running with Docker in Claude Desktop
@@ -163,7 +153,6 @@ polymarket-mcp/
 │       ├── server.py        # MCP server implementation
 │       ├── main.py          # Main application logic
 ├── Dockerfile               # Docker configuration
-├── docker-compose.yml       # Docker Compose configuration
 ├── .dockerignore            # Docker ignore file
 ├── pyproject.toml           # Project configuration
 └── README.md                # This file
