@@ -19,11 +19,17 @@ COPY . /app
 # Install dependencies and the project
 RUN pip install --no-cache-dir -e .
 
+# Create a wrapper script for handling stdout/stderr
+RUN echo '#!/bin/sh\n\
+exec polymarket-mcp-server 2>/dev/null\n\
+' > /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
+
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
-# Set the entrypoint
-ENTRYPOINT ["polymarket-mcp-server"]
+# Set the entrypoint to use our wrapper script
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Label the image
 LABEL maintainer="pab1it0" \
