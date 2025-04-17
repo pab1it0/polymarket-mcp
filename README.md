@@ -16,6 +16,13 @@ This provides access to Polymarket's prediction markets and market data through 
   - [x] View recent trades
   - [x] Get historical market data
 
+- [x] Docker containerization support
+
+- [x] Provide interactive tools for AI assistants
+
+The list of tools is configurable, so you can choose which tools you want to make available to the MCP client.
+This is useful if you don't use certain functionality or if you don't want to take up too much of the context window.
+
 ## Usage
 
 1. Configure the environment variables for your Polymarket access, either through a `.env` file or system environment variables:
@@ -49,6 +56,31 @@ POLYMARKET_CHAIN_ID=137  # Polygon mainnet
 ```
 
 > Note: If you see `Error: spawn uv ENOENT` in Claude Desktop, you may need to specify the full path to `uv` or set the environment variable `NO_UV=1` in the configuration.
+
+### Running with uv (Recommended)
+
+If you have `uv` installed globally, you can modify your Claude Desktop configuration to directly run the server:
+
+```json
+{
+  "mcpServers": {
+    "polymarket": {
+      "command": "/usr/local/bin/uv",  // Use the full path to your uv installation
+      "args": [
+        "run",
+        "-m", "polymarket_mcp_server.main"
+      ],
+      "cwd": "<full path to polymarket-mcp directory>",
+      "env": {
+        "POLYMARKET_API_URL": "https://clob.polymarket.com",
+        "POLYMARKET_CHAIN_ID": "137"
+      }
+    }
+  }
+}
+```
+
+This approach runs the server directly using the `uv` package manager, which can provide better performance and reliability.
 
 ## Docker Usage
 
@@ -99,6 +131,8 @@ To use the containerized server with Claude Desktop, update the configuration to
 }
 ```
 
+This configuration passes the environment variables from Claude Desktop to the Docker container by using the `-e` flag with just the variable name, and providing the actual values in the `env` object.
+
 ## Development
 
 Contributions are welcome! Please open an issue or submit a pull request if you have any suggestions or improvements.
@@ -137,7 +171,7 @@ polymarket-mcp/
 
 ### Testing
 
-The project includes a test suite that ensures functionality and helps prevent regressions.
+The project includes a comprehensive test suite that ensures functionality and helps prevent regressions.
 
 Run the tests with pytest:
 
@@ -152,7 +186,14 @@ pytest
 pytest --cov=src --cov-report=term-missing
 ```
 
-## Available Tools
+Tests are organized into:
+- Server functionality tests
+- Main application tests
+- Error handling tests
+
+When adding new features, please also add corresponding tests.
+
+### Available Tools
 
 | Tool | Category | Description |
 | --- | --- | --- |
