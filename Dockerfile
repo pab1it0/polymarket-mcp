@@ -19,9 +19,6 @@ COPY . /app
 # Install dependencies and the project
 RUN pip install --no-cache-dir -e .
 
-# Create log directory
-RUN mkdir -p /app/logs
-
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 

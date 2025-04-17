@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import json
 import asyncio
 from typing import Any, Dict, List, Optional, Union
@@ -49,7 +48,7 @@ async def make_request(endpoint: str, method: str = "GET", data: Optional[Dict[s
             else:
                 raise ValueError(f"Unsupported HTTP method: {method}")
     except aiohttp.ClientError as e:
-        print(f"API request failed: {e}", file=sys.stderr)
+        print(f"API request failed: {e}")
         raise ValueError(f"Failed to communicate with Polymarket API: {e}")
 
 @mcp.tool(description="Get a list of all available markets on Polymarket.")
@@ -152,5 +151,5 @@ async def search_markets(query: str, limit: int = 20) -> List[Dict[str, Any]]:
     return response.get("markets", [])
 
 if __name__ == "__main__":
-    print("Starting Polymarket MCP Server...", file=sys.stderr)
+    print(f"Starting Polymarket MCP Server...")
     mcp.run()
