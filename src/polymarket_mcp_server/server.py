@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import json
 import asyncio
-import logging
 from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass
 
@@ -11,10 +11,6 @@ import dotenv
 import requests
 import aiohttp
 from mcp.server.fastmcp import FastMCP
-
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 dotenv.load_dotenv()
 mcp = FastMCP("Polymarket MCP")
@@ -53,7 +49,7 @@ async def make_request(endpoint: str, method: str = "GET", data: Optional[Dict[s
             else:
                 raise ValueError(f"Unsupported HTTP method: {method}")
     except aiohttp.ClientError as e:
-        logger.error(f"API request failed: {e}")
+        print(f"API request failed: {e}", file=sys.stderr)
         raise ValueError(f"Failed to communicate with Polymarket API: {e}")
 
 @mcp.tool(description="Get a list of all available markets on Polymarket.")
@@ -156,5 +152,5 @@ async def search_markets(query: str, limit: int = 20) -> List[Dict[str, Any]]:
     return response.get("markets", [])
 
 if __name__ == "__main__":
-    print(f"Starting Polymarket MCP Server...")
+    print("Starting Polymarket MCP Server...", file=sys.stderr)
     mcp.run()
