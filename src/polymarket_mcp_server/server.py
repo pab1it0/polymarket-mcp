@@ -2,8 +2,6 @@
 
 import os
 import json
-import asyncio
-import sys
 from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass
 
@@ -13,8 +11,7 @@ import aiohttp
 from mcp.server.fastmcp import FastMCP
 
 dotenv.load_dotenv()
-# Add debug and verbose options (like in the adx-mcp-server)
-mcp = FastMCP("Polymarket MCP", debug=False, verbose=False)
+mcp = FastMCP("Polymarket MCP")
 
 @dataclass
 class PolymarketConfig:
@@ -26,11 +23,6 @@ config = PolymarketConfig(
     api_url=os.environ.get("POLYMARKET_API_URL", "https://clob.polymarket.com"),
     chain_id=int(os.environ.get("POLYMARKET_CHAIN_ID", "137")),  # Default to Polygon mainnet
 )
-
-# Custom error handler that doesn't use print
-def log_error(message):
-    with open("/app/error.log", "a") as f:
-        f.write(f"{message}\n")
 
 async def make_request(endpoint: str, method: str = "GET", data: Optional[Dict[str, Any]] = None,
                       params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -55,7 +47,7 @@ async def make_request(endpoint: str, method: str = "GET", data: Optional[Dict[s
             else:
                 raise ValueError(f"Unsupported HTTP method: {method}")
     except aiohttp.ClientError as e:
-        log_error(f"API request failed: {e}")
+        print(f"API request failed: {e}")
         raise ValueError(f"Failed to communicate with Polymarket API: {e}")
 
 @mcp.tool(description="Get a list of all available markets on Polymarket.")
@@ -158,5 +150,5 @@ async def search_markets(query: str, limit: int = 20) -> List[Dict[str, Any]]:
     return response.get("markets", [])
 
 if __name__ == "__main__":
-    log_error("Starting Polymarket MCP Server...")
+    print(f"Starting Polymarket MCP Server...")
     mcp.run()
