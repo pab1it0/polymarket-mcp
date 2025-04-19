@@ -6,6 +6,7 @@ Unit tests for the Polymarket MCP server.
 import os
 import json
 import pytest
+import httpx
 from unittest.mock import patch, AsyncMock, MagicMock
 
 from polymarket_mcp_server.server import (
