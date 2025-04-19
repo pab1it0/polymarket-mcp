@@ -25,68 +25,11 @@ This is useful if you don't use certain functionality or if you don't want to ta
 
 ## Usage
 
-1. Configure the environment variables for your Polymarket access, either through a `.env` file or system environment variables:
+### Docker Usage (Recommended)
 
-```env
-# Polymarket API configuration
-POLYMARKET_API_URL=https://clob.polymarket.com
-POLYMARKET_CHAIN_ID=137  # Polygon mainnet
-```
+Docker provides the most reliable and consistent way to run the Polymarket MCP server across different environments.
 
-2. Add the server configuration to your client configuration file. For example, for Claude Desktop:
-
-```json
-{
-  "mcpServers": {
-    "polymarket": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "<full path to polymarket-mcp directory>",
-        "run",
-        "src/polymarket_mcp_server/main.py"
-      ],
-      "env": {
-        "POLYMARKET_API_URL": "https://clob.polymarket.com",
-        "POLYMARKET_CHAIN_ID": "137"
-      }
-    }
-  }
-}
-```
-
-> Note: If you see `Error: spawn uv ENOENT` in Claude Desktop, you may need to specify the full path to `uv` or set the environment variable `NO_UV=1` in the configuration.
-
-### Running with uv (Recommended)
-
-If you have `uv` installed globally, you can modify your Claude Desktop configuration to directly run the server:
-
-```json
-{
-  "mcpServers": {
-    "polymarket": {
-      "command": "/usr/local/bin/uv",  // Use the full path to your uv installation
-      "args": [
-        "run",
-        "-m", "polymarket_mcp_server.main"
-      ],
-      "cwd": "<full path to polymarket-mcp directory>",
-      "env": {
-        "POLYMARKET_API_URL": "https://clob.polymarket.com",
-        "POLYMARKET_CHAIN_ID": "137"
-      }
-    }
-  }
-}
-```
-
-This approach runs the server directly using the `uv` package manager, which can provide better performance and reliability.
-
-## Docker Usage
-
-This project includes Docker support for easy deployment and isolation.
-
-### Building the Docker Image
+#### Building the Docker Image
 
 Build the Docker image using:
 
@@ -94,9 +37,9 @@ Build the Docker image using:
 docker build -t polymarket-mcp-server .
 ```
 
-### Running with Docker
+#### Running with Docker
 
-You can run the server using Docker directly:
+Run the server using Docker directly:
 
 ```bash
 docker run -it --rm \
@@ -105,9 +48,9 @@ docker run -it --rm \
   polymarket-mcp-server
 ```
 
-### Running with Docker in Claude Desktop
+#### Running with Docker in Claude Desktop
 
-To use the containerized server with Claude Desktop, update the configuration to use Docker with the environment variables:
+To use the containerized server with Claude Desktop, add this to your Claude Desktop configuration:
 
 ```json
 {
@@ -132,6 +75,41 @@ To use the containerized server with Claude Desktop, update the configuration to
 ```
 
 This configuration passes the environment variables from Claude Desktop to the Docker container by using the `-e` flag with just the variable name, and providing the actual values in the `env` object.
+
+### Running with uv (Alternative Method)
+
+If you prefer not to use Docker, you can use `uv` to run the server directly.
+
+1. Configure the environment variables:
+
+```env
+# Polymarket API configuration
+POLYMARKET_API_URL=https://clob.polymarket.com
+POLYMARKET_CHAIN_ID=137  # Polygon mainnet
+```
+
+2. Add the server configuration to your Claude Desktop configuration:
+
+```json
+{
+  "mcpServers": {
+    "polymarket": {
+      "command": "/usr/local/bin/uv",  // Use the full path to your uv installation
+      "args": [
+        "run",
+        "-m", "polymarket_mcp_server.main"
+      ],
+      "cwd": "<full path to polymarket-mcp directory>",
+      "env": {
+        "POLYMARKET_API_URL": "https://clob.polymarket.com",
+        "POLYMARKET_CHAIN_ID": "137"
+      }
+    }
+  }
+}
+```
+
+> Note: If you see `Error: spawn uv ENOENT` in Claude Desktop, you may need to specify the full path to `uv` or set the environment variable `NO_UV=1` in the configuration.
 
 ## Development
 
