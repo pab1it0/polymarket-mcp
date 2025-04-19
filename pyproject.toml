@@ -6,11 +6,8 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "mcp[cli]",
+    "httpx",
     "python-dotenv",
-    "aiohttp",
-    "requests",
-    "pydantic>=2.0.0",
-    "pyproject-toml>=0.1.0",
 ]
 
 [project.optional-dependencies]
