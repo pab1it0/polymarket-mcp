@@ -7,10 +7,8 @@ from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass
 import httpx
 
-import dotenv
 from mcp.server.fastmcp import FastMCP
 
-dotenv.load_dotenv()
 mcp = FastMCP("Polymarket MCP")
 
 @dataclass
@@ -157,5 +155,5 @@ async def search_markets_resource(query: str) -> str:
         return f"Error searching markets: {str(e)}"
 
 if __name__ == "__main__":
-    print(f"Starting Polymarket MCP Server...")
+    sys.stderr.write(f"Starting Polymarket MCP Server...\n")
     mcp.run()
