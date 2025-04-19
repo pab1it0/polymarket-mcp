@@ -13,16 +13,12 @@ def setup_environment():
         sys.stderr.write(f"Note: .env file not loaded, using default environment variables: {str(e)}\n")
     
     sys.stderr.write("Using environment variables for configuration\n")
-    sys.stderr.write(f"Polymarket API configuration:\n")
+    sys.stderr.write(f"Polymarket Gamma API configuration:\n")
     sys.stderr.write(f"  API URL: {config.api_url}\n")
-    sys.stderr.write(f"  Chain ID: {config.chain_id}\n")
     
-    # Check if key and funder are available if required
-    key = os.environ.get("KEY")
-    funder = os.environ.get("FUNDER")
-    
-    if config.requires_auth and (not key or not funder):
-        sys.stderr.write("\nWarning: Authentication credentials (KEY, FUNDER) not found in environment variables.\n")
+    # Check if authentication is required and available (for future use)
+    if config.requires_auth:
+        sys.stderr.write("\nWarning: Authentication required but not implemented for Gamma API.\n")
         sys.stderr.write("Some API functions that require authentication may not work.\n")
     
     return True
@@ -32,7 +28,7 @@ def run_server():
     if not setup_environment():
         sys.exit(1)
     
-    sys.stderr.write("\nStarting Polymarket MCP Server...\n")
+    sys.stderr.write("\nStarting Polymarket MCP Server with Gamma API...\n")
     sys.stderr.write("Running server in standard mode...\n")
     
     # Run the server with the stdio transport
