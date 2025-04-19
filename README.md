@@ -6,11 +6,15 @@ This provides access to Polymarket's prediction markets and market data through 
 
 [mcp]: https://modelcontextprotocol.io
 
+## ⚠️ API Update Notice
+
+This server has been updated to use Polymarket's Gamma API instead of the previous CLOB API. The Gamma API provides read-only access to Polymarket market data, events, and historical information.
+
 ## Features
 
-- [x] Market data access
-  - [x] List all available markets
-  - [x] Get detailed market information
+- [x] Market and Event data access
+  - [x] List all available markets and events
+  - [x] Get detailed market and event information
   - [x] Search markets by keyword
   - [x] Get order book data
   - [x] View recent trades
@@ -19,10 +23,6 @@ This provides access to Polymarket's prediction markets and market data through 
 - [x] Docker containerization support
 
 - [x] Provide interactive tools for AI assistants
-
-- [x] Native integration with `py_clob_client` for direct Polymarket API access
-
-- [x] Support for authentication via private key and wallet address
 
 The list of tools is configurable, so you can choose which tools you want to make available to the MCP client.
 This is useful if you don't use certain functionality or if you don't want to take up too much of the context window.
@@ -39,14 +39,10 @@ The easiest way to run the Polymarket MCP server is to use the pre-built Docker 
 
 ```bash
 docker run -it --rm \
-  -e POLYMARKET_API_URL=https://clob.polymarket.com \
-  -e POLYMARKET_CHAIN_ID=137 \
-  -e KEY=your_private_key_here \
-  -e FUNDER=your_wallet_address_here \
+  -e GAMMA_API_URL=https://gamma-api.polymarket.com \
+  -e GAMMA_REQUIRES_AUTH=false \
   ghcr.io/pab1it0/polymarket-mcp:latest
 ```
-
-Note: The `KEY` and `FUNDER` environment variables are optional but required for certain operations that need authentication.
 
 #### Building the Docker Image Locally
 
@@ -60,10 +56,8 @@ And then run it:
 
 ```bash
 docker run -it --rm \
-  -e POLYMARKET_API_URL=https://clob.polymarket.com \
-  -e POLYMARKET_CHAIN_ID=137 \
-  -e KEY=your_private_key_here \
-  -e FUNDER=your_wallet_address_here \
+  -e GAMMA_API_URL=https://gamma-api.polymarket.com \
+  -e GAMMA_REQUIRES_AUTH=false \
   polymarket-mcp-server
 ```
 
@@ -80,24 +74,18 @@ To use the containerized server with Claude Desktop, add this to your Claude Des
         "run",
         "--rm",
         "-i",
-        "-e", "POLYMARKET_API_URL",
-        "-e", "POLYMARKET_CHAIN_ID",
-        "-e", "KEY",
-        "-e", "FUNDER",
+        "-e", "GAMMA_API_URL",
+        "-e", "GAMMA_REQUIRES_AUTH",
         "ghcr.io/pab1it0/polymarket-mcp:latest"
       ],
       "env": {
-        "POLYMARKET_API_URL": "https://clob.polymarket.com",
-        "POLYMARKET_CHAIN_ID": "137",
-        "KEY": "your_private_key_here",
-        "FUNDER": "your_wallet_address_here"
+        "GAMMA_API_URL": "https://gamma-api.polymarket.com",
+        "GAMMA_REQUIRES_AUTH": "false"
       }
     }
   }
 }
 ```
-
-This configuration passes the environment variables from Claude Desktop to the Docker container by using the `-e` flag with just the variable name, and providing the actual values in the `env` object.
 
 ### Running with uv (Alternative Method)
 
@@ -116,16 +104,13 @@ nano .env
 Example `.env` content:
 
 ```env
-# Polymarket API Configuration
-POLYMARKET_API_URL=https://clob.polymarket.com
-POLYMARKET_CHAIN_ID=137  # Polygon mainnet
+# Polymarket Gamma API Configuration
+GAMMA_API_URL=https://gamma-api.polymarket.com
+GAMMA_REQUIRES_AUTH=false
 
-# Authentication (required for some operations)
-KEY=your_private_key_here
-FUNDER=your_wallet_address_here
-
-# Set to "false" to disable authentication requirement warnings
-POLYMARKET_REQUIRES_AUTH=true
+# Add authentication credentials if needed in the future
+# API_KEY=
+# API_SECRET=
 ```
 
 2. Add the server configuration to your Claude Desktop configuration:
@@ -141,10 +126,8 @@ POLYMARKET_REQUIRES_AUTH=true
       ],
       "cwd": "<full path to polymarket-mcp directory>",
       "env": {
-        "POLYMARKET_API_URL": "https://clob.polymarket.com",
-        "POLYMARKET_CHAIN_ID": "137",
-        "KEY": "your_private_key_here",
-        "FUNDER": "your_wallet_address_here"
+        "GAMMA_API_URL": "https://gamma-api.polymarket.com",
+        "GAMMA_REQUIRES_AUTH": "false"
       }
     }
   }
@@ -155,12 +138,12 @@ POLYMARKET_REQUIRES_AUTH=true
 
 ## Authentication
 
-The Polymarket MCP server supports authentication via a private key and wallet address for operations that require it. These values are loaded from environment variables:
+The Polymarket MCP server with Gamma API currently does not require authentication for read-only operations. However, the framework is in place to support authentication in the future if needed.
 
-- `KEY`: Your private key for signing transactions/requests
-- `FUNDER`: Your wallet address
+If authentication becomes necessary, it will be configured through environment variables:
 
-The server will work for public/read-only operations without authentication, but some operations may require these values to be set.
+- `API_KEY`: API key for authentication
+- `API_SECRET`: API secret for authentication 
 
 ## Development
 
@@ -237,6 +220,8 @@ When adding new features, please also add corresponding tests.
 | `get_recent_trades` | Market Data | Get latest trades for a market |
 | `get_market_history` | Market Data | Get historical market data |
 | `search_markets` | Market Data | Search for markets by keyword |
+| `get_events` | Event Data | Get a list of all available events |
+| `get_event_by_id` | Event Data | Get detailed information about a specific event |
 
 ## License
 
