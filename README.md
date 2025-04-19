@@ -29,17 +29,26 @@ This is useful if you don't use certain functionality or if you don't want to ta
 
 Docker provides the most reliable and consistent way to run the Polymarket MCP server across different environments.
 
-#### Building the Docker Image
+#### Using Pre-built Docker Image
 
-Build the Docker image using:
+The easiest way to run the Polymarket MCP server is to use the pre-built Docker image from GitHub Container Registry:
+
+```bash
+docker run -it --rm \
+  -e POLYMARKET_API_URL=https://clob.polymarket.com \
+  -e POLYMARKET_CHAIN_ID=137 \
+  ghcr.io/pab1it0/polymarket-mcp:latest
+```
+
+#### Building the Docker Image Locally
+
+Alternatively, you can build the Docker image locally:
 
 ```bash
 docker build -t polymarket-mcp-server .
 ```
 
-#### Running with Docker
-
-Run the server using Docker directly:
+And then run it:
 
 ```bash
 docker run -it --rm \
@@ -63,7 +72,7 @@ To use the containerized server with Claude Desktop, add this to your Claude Des
         "-i",
         "-e", "POLYMARKET_API_URL",
         "-e", "POLYMARKET_CHAIN_ID",
-        "polymarket-mcp-server"
+        "ghcr.io/pab1it0/polymarket-mcp:latest"
       ],
       "env": {
         "POLYMARKET_API_URL": "https://clob.polymarket.com",
@@ -140,7 +149,7 @@ polymarket-mcp/
 │   └── polymarket_mcp_server/
 │       ├── __init__.py      # Package initialization
 │       ├── server.py        # MCP server implementation
-│       ├── main.py          # Main application logic
+│       └── main.py          # Main application logic
 ├── Dockerfile               # Docker configuration
 ├── .dockerignore            # Docker ignore file
 ├── pyproject.toml           # Project configuration
