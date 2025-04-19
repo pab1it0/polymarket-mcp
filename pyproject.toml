@@ -1,14 +1,13 @@
 [project]
 name = "polymarket_mcp_server"
 version = "0.1.0"
-description = "MCP server for Polymarket market data integration"
+description = "MCP server for Polymarket market data integration using Gamma API"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "mcp[cli]",
     "httpx",
     "python-dotenv",
-    "py-clob-client",
 ]
 
 [project.optional-dependencies]
