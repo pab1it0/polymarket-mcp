@@ -20,6 +20,10 @@ This provides access to Polymarket's prediction markets and market data through 
 
 - [x] Provide interactive tools for AI assistants
 
+- [x] Native integration with `py_clob_client` for direct Polymarket API access
+
+- [x] Support for authentication via private key and wallet address
+
 The list of tools is configurable, so you can choose which tools you want to make available to the MCP client.
 This is useful if you don't use certain functionality or if you don't want to take up too much of the context window.
 
@@ -37,8 +41,12 @@ The easiest way to run the Polymarket MCP server is to use the pre-built Docker 
 docker run -it --rm \
   -e POLYMARKET_API_URL=https://clob.polymarket.com \
   -e POLYMARKET_CHAIN_ID=137 \
+  -e KEY=your_private_key_here \
+  -e FUNDER=your_wallet_address_here \
   ghcr.io/pab1it0/polymarket-mcp:latest
 ```
+
+Note: The `KEY` and `FUNDER` environment variables are optional but required for certain operations that need authentication.
 
 #### Building the Docker Image Locally
 
@@ -54,6 +62,8 @@ And then run it:
 docker run -it --rm \
   -e POLYMARKET_API_URL=https://clob.polymarket.com \
   -e POLYMARKET_CHAIN_ID=137 \
+  -e KEY=your_private_key_here \
+  -e FUNDER=your_wallet_address_here \
   polymarket-mcp-server
 ```
 
@@ -72,11 +82,15 @@ To use the containerized server with Claude Desktop, add this to your Claude Des
         "-i",
         "-e", "POLYMARKET_API_URL",
         "-e", "POLYMARKET_CHAIN_ID",
+        "-e", "KEY",
+        "-e", "FUNDER",
         "ghcr.io/pab1it0/polymarket-mcp:latest"
       ],
       "env": {
         "POLYMARKET_API_URL": "https://clob.polymarket.com",
-        "POLYMARKET_CHAIN_ID": "137"
+        "POLYMARKET_CHAIN_ID": "137",
+        "KEY": "your_private_key_here",
+        "FUNDER": "your_wallet_address_here"
       }
     }
   }
@@ -89,12 +103,29 @@ This configuration passes the environment variables from Claude Desktop to the D
 
 If you prefer not to use Docker, you can use `uv` to run the server directly.
 
-1. Configure the environment variables:
+1. Create and configure a `.env` file in the project root directory:
+
+```bash
+# Copy the template
+cp .env.template .env
+
+# Edit the file to add your configuration
+nano .env
+```
+
+Example `.env` content:
 
 ```env
-# Polymarket API configuration
+# Polymarket API Configuration
 POLYMARKET_API_URL=https://clob.polymarket.com
 POLYMARKET_CHAIN_ID=137  # Polygon mainnet
+
+# Authentication (required for some operations)
+KEY=your_private_key_here
+FUNDER=your_wallet_address_here
+
+# Set to "false" to disable authentication requirement warnings
+POLYMARKET_REQUIRES_AUTH=true
 ```
 
 2. Add the server configuration to your Claude Desktop configuration:
@@ -111,7 +142,9 @@ POLYMARKET_CHAIN_ID=137  # Polygon mainnet
       "cwd": "<full path to polymarket-mcp directory>",
       "env": {
         "POLYMARKET_API_URL": "https://clob.polymarket.com",
-        "POLYMARKET_CHAIN_ID": "137"
+        "POLYMARKET_CHAIN_ID": "137",
+        "KEY": "your_private_key_here",
+        "FUNDER": "your_wallet_address_here"
       }
     }
   }
@@ -119,6 +152,15 @@ POLYMARKET_CHAIN_ID=137  # Polygon mainnet
 ```
 
 > Note: If you see `Error: spawn uv ENOENT` in Claude Desktop, you may need to specify the full path to `uv` or set the environment variable `NO_UV=1` in the configuration.
+
+## Authentication
+
+The Polymarket MCP server supports authentication via a private key and wallet address for operations that require it. These values are loaded from environment variables:
+
+- `KEY`: Your private key for signing transactions/requests
+- `FUNDER`: Your wallet address
+
+The server will work for public/read-only operations without authentication, but some operations may require these values to be set.
 
 ## Development
 
@@ -139,6 +181,10 @@ source .venv/bin/activate  # On Unix/macOS
 uv pip install -e .
 ```
 
+### Environment Variables Support
+
+The server loads environment variables from a `.env` file in the project root directory if present. Copy `.env.template` to `.env` and adjust the values as needed.
+
 ## Project Structure
 
 The project has been organized with a `src` directory structure:
@@ -152,6 +198,7 @@ polymarket-mcp/
 │       └── main.py          # Main application logic
 ├── Dockerfile               # Docker configuration
 ├── .dockerignore            # Docker ignore file
+├── .env.template            # Template for environment variables
 ├── pyproject.toml           # Project configuration
 └── README.md                # This file
 ```
