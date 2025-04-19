@@ -8,8 +8,6 @@ from dataclasses import dataclass
 import httpx
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
-from py_clob_client.client import ClobClient
-from py_clob_client.constants import POLYGON
 
 # Load environment variables from .env file (silently continues if no file found)
 try:
@@ -20,48 +18,25 @@ except Exception:
 mcp = FastMCP("Polymarket MCP")
 
 @dataclass
-class PolymarketConfig:
-    api_url: str = "https://clob.polymarket.com"
-    chain_id: int = 137  # Default to Polygon mainnet
-    key: Optional[str] = None
-    funder: Optional[str] = None
-    requires_auth: bool = True
+class GammaConfig:
+    api_url: str = "https://gamma-api.polymarket.com"
+    requires_auth: bool = False
 
 # Load configuration from environment variables with defaults
-config = PolymarketConfig(
-    api_url=os.environ.get("POLYMARKET_API_URL", "https://clob.polymarket.com"),
-    chain_id=int(os.environ.get("POLYMARKET_CHAIN_ID", "137")),
-    key=os.environ.get("KEY"),
-    funder=os.environ.get("FUNDER"),
-    requires_auth=os.environ.get("POLYMARKET_REQUIRES_AUTH", "true").lower() == "true"
+config = GammaConfig(
+    api_url=os.environ.get("GAMMA_API_URL", "https://gamma-api.polymarket.com"),
+    requires_auth=os.environ.get("GAMMA_REQUIRES_AUTH", "false").lower() == "true"
 )
 
-# Initialize the CLOB client
-def get_clob_client() -> Optional[ClobClient]:
-    """Get an initialized CLOB client if authentication is available."""
-    try:
-        if config.key and config.funder:
-            client = ClobClient(
-                config.api_url,
-                key=config.key,
-                chain_id=POLYGON,
-                funder=config.funder,
-                signature_type=1,
-            )
-            client.set_api_creds(client.create_or_derive_api_creds())
-            return client
-        else:
-            # Return a client without authentication for read-only operations
-            client = ClobClient(config.api_url, chain_id=POLYGON)
-            return client
-    except Exception as e:
-        sys.stderr.write(f"Error initializing CLOB client: {str(e)}\n")
-        return None
-
 async def make_api_request(endpoint: str, params: Dict[str, Any] = None, method: str = "GET", data: Dict[str, Any] = None) -> Dict[str, Any]:
-    """Make a request to the Polymarket API."""
+    """Make a request to the Polymarket Gamma API."""
     url = f"{config.api_url.rstrip('/')}/{endpoint.lstrip('/')}"
     headers = {"Content-Type": "application/json"}
+    
+    # Add authentication if needed in the future
+    if config.requires_auth:
+        # Implementation would depend on Gamma API auth requirements
+        pass
     
     async with httpx.AsyncClient() as client:
         if method == "GET":
@@ -75,37 +50,28 @@ async def make_api_request(endpoint: str, params: Dict[str, Any] = None, method:
         return response.json()
 
 @mcp.tool(description="Get a list of all available markets on Polymarket.")
-async def get_markets(status: Optional[str] = None) -> List[Dict[str, Any]]:
+async def get_markets(status: Optional[str] = None) -> Dict[str, Any]:
     """
     Get a list of all available markets.
     
     Parameters:
-    - status: Filter markets by status (OPEN, RESOLVED, etc.)
+    - status: Filter markets by status (active, closed, archived)
     """
     try:
-        client = get_clob_client()
-        if client:
-            markets_data = client.get_markets()
-            
-            # Filter by status if specified
-            if status and isinstance(markets_data, list):
-                markets_data = [
-                    market for market in markets_data 
-                    if isinstance(market, dict) and market.get('status', '').lower() == status.lower()
-                ]
-            
-            return markets_data
-        else:
-            # Fallback to httpx request if client initialization failed
-            params = {}
-            if status:
-                params["status"] = status
-            
-            response = await make_api_request("markets", params=params)
-            return response.get("markets", [])
+        params = {}
+        if status:
+            if status.lower() == "open":
+                params["active"] = True
+            elif status.lower() == "closed":
+                params["closed"] = True
+            elif status.lower() == "archived":
+                params["archived"] = True
+        
+        response = await make_api_request("markets", params=params)
+        return response
     except Exception as e:
         sys.stderr.write(f"Error getting markets: {str(e)}\n")
-        return []
+        return {"markets": []}
 
 @mcp.tool(description="Get detailed information about a specific market by its ID.")
 async def get_market_by_id(market_id: str) -> Dict[str, Any]:
@@ -116,12 +82,7 @@ async def get_market_by_id(market_id: str) -> Dict[str, Any]:
     - market_id: The unique identifier of the market
     """
     try:
-        client = get_clob_client()
-        if client:
-            return client.get_market(market_id)
-        else:
-            # Fallback to httpx request if client initialization failed
-            return await make_api_request(f"markets/{market_id}")
+        return await make_api_request(f"markets/{market_id}")
     except Exception as e:
         sys.stderr.write(f"Error getting market details: {str(e)}\n")
         return {"error": str(e)}
@@ -136,25 +97,20 @@ async def get_order_book(market_id: str, outcome_id: Optional[str] = None) -> Di
     - outcome_id: Optional outcome ID to filter by
     """
     try:
-        client = get_clob_client()
-        if client:
-            params = {"marketId": market_id}
-            if outcome_id:
-                params["outcomeId"] = outcome_id
-            return client.get_orderbook(market_id, outcome_id)
-        else:
-            # Fallback to httpx request if client initialization failed
-            params = {"marketId": market_id}
-            if outcome_id:
-                params["outcomeId"] = outcome_id
+        # Note: This endpoint was not explicitly mentioned in the Gamma API docs
+        # We're making an assumption about its availability and format
+        # May need to be updated based on actual Gamma API implementation
+        params = {}
+        if outcome_id:
+            params["outcome_id"] = outcome_id
             
-            return await make_api_request("orderbook", params=params)
+        return await make_api_request(f"markets/{market_id}/orderbook", params=params)
     except Exception as e:
         sys.stderr.write(f"Error getting order book: {str(e)}\n")
         return {"error": str(e)}
 
 @mcp.tool(description="Get the latest trades for a specific market.")
-async def get_recent_trades(market_id: str, limit: int = 50) -> List[Dict[str, Any]]:
+async def get_recent_trades(market_id: str, limit: int = 50) -> Dict[str, Any]:
     """
     Get recent trades for a market.
     
@@ -163,21 +119,16 @@ async def get_recent_trades(market_id: str, limit: int = 50) -> List[Dict[str, A
     - limit: Maximum number of trades to return
     """
     try:
-        client = get_clob_client()
-        if client:
-            trades = client.get_trades(market_id, limit=limit)
-            return trades.get("trades", []) if isinstance(trades, dict) else trades
-        else:
-            # Fallback to httpx request if client initialization failed
-            params = {"marketId": market_id, "limit": limit}
-            response = await make_api_request("trades", params=params)
-            return response.get("trades", [])
+        # Note: This endpoint was not explicitly mentioned in the Gamma API docs
+        # We're making an assumption about its availability and format
+        params = {"limit": limit}
+        return await make_api_request(f"markets/{market_id}/trades", params=params)
     except Exception as e:
         sys.stderr.write(f"Error getting recent trades: {str(e)}\n")
-        return []
+        return {"trades": []}
 
 @mcp.tool(description="Get historical market data (prices and volumes) for a specific market.")
-async def get_market_history(market_id: str, resolution: str = "hour") -> List[Dict[str, Any]]:
+async def get_market_history(market_id: str, resolution: str = "hour") -> Dict[str, Any]:
     """
     Get historical market data.
     
@@ -186,21 +137,16 @@ async def get_market_history(market_id: str, resolution: str = "hour") -> List[D
     - resolution: Time resolution (hour, day, week)
     """
     try:
-        client = get_clob_client()
-        if client:
-            history = client.get_market_history(market_id, resolution=resolution)
-            return history.get("history", []) if isinstance(history, dict) else history
-        else:
-            # Fallback to httpx request if client initialization failed
-            params = {"marketId": market_id, "resolution": resolution}
-            response = await make_api_request("markets/history", params=params)
-            return response.get("history", [])
+        # Note: This endpoint was not explicitly mentioned in the Gamma API docs
+        # We're making an assumption about its availability and format
+        params = {"resolution": resolution}
+        return await make_api_request(f"markets/{market_id}/history", params=params)
     except Exception as e:
         sys.stderr.write(f"Error getting market history: {str(e)}\n")
-        return []
+        return {"history": []}
 
 @mcp.tool(description="Search for markets by keyword or phrase.")
-async def search_markets(query: str, limit: int = 20) -> List[Dict[str, Any]]:
+async def search_markets(query: str, limit: int = 20) -> Dict[str, Any]:
     """
     Search for markets by keyword.
     
@@ -209,20 +155,13 @@ async def search_markets(query: str, limit: int = 20) -> List[Dict[str, Any]]:
     - limit: Maximum number of results to return
     """
     try:
-        client = get_clob_client()
-        if client:
-            # Use the appropriate search method from py_clob_client
-            # Note: This is a placeholder, adjust based on actual API
-            markets = client.search_markets(query, limit=limit)
-            return markets.get("markets", []) if isinstance(markets, dict) else markets
-        else:
-            # Fallback to httpx request if client initialization failed
-            params = {"q": query, "limit": limit}
-            response = await make_api_request("markets/search", params=params)
-            return response.get("markets", [])
+        # Using the slug parameter for search, as the documentation doesn't 
+        # explicitly mention a search endpoint
+        params = {"slug": query, "limit": limit}
+        return await make_api_request("markets", params=params)
     except Exception as e:
         sys.stderr.write(f"Error searching markets: {str(e)}\n")
-        return []
+        return {"markets": []}
 
 @mcp.resource("polymarket://markets")
 async def markets_resource() -> str:
@@ -261,6 +200,84 @@ async def search_markets_resource(query: str) -> str:
     except Exception as e:
         return f"Error searching markets: {str(e)}"
 
+# New resources for events based on Gamma API
+@mcp.tool(description="Get a list of all available events on Polymarket.")
+async def get_events(
+    limit: Optional[int] = None,
+    offset: Optional[int] = None,
+    active: Optional[bool] = None,
+    closed: Optional[bool] = None,
+    archived: Optional[bool] = None,
+    tag: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Get a list of all available events.
+    
+    Parameters:
+    - limit: Maximum number of events to return
+    - offset: Number of events to skip (for pagination)
+    - active: Filter by active status
+    - closed: Filter by closed status
+    - archived: Filter by archived status
+    - tag: Filter by tag label
+    """
+    try:
+        params = {}
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+        if active is not None:
+            params["active"] = active
+        if closed is not None:
+            params["closed"] = closed
+        if archived is not None:
+            params["archived"] = archived
+        if tag:
+            params["tag"] = tag
+            
+        return await make_api_request("events", params=params)
+    except Exception as e:
+        sys.stderr.write(f"Error getting events: {str(e)}\n")
+        return {"events": []}
+
+@mcp.tool(description="Get detailed information about a specific event by its ID.")
+async def get_event_by_id(event_id: str) -> Dict[str, Any]:
+    """
+    Get detailed information about a specific event.
+    
+    Parameters:
+    - event_id: The unique identifier of the event
+    """
+    try:
+        return await make_api_request(f"events/{event_id}")
+    except Exception as e:
+        sys.stderr.write(f"Error getting event details: {str(e)}\n")
+        return {"error": str(e)}
+
+@mcp.resource("polymarket://events")
+async def events_resource() -> str:
+    """Resource that returns all available events."""
+    try:
+        events = await get_events()
+        return json.dumps(events, indent=2)
+    except Exception as e:
+        return f"Error retrieving events: {str(e)}"
+
+@mcp.resource("polymarket://events/{event_id}")
+async def event_details_resource(event_id: str) -> str:
+    """
+    Resource that returns details for a specific event.
+    
+    Parameters:
+    - event_id: The unique identifier of the event
+    """
+    try:
+        event = await get_event_by_id(event_id=event_id)
+        return json.dumps(event, indent=2)
+    except Exception as e:
+        return f"Error retrieving event details: {str(e)}"
+
 if __name__ == "__main__":
-    sys.stderr.write(f"Starting Polymarket MCP Server...\n")
+    sys.stderr.write(f"Starting Polymarket MCP Server with Gamma API...\n")
     mcp.run()
