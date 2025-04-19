@@ -35,9 +35,11 @@ USER app
 
 CMD ["/app/.venv/bin/polymarket-mcp-server"]
 
-# Metadata
+# GitHub Container Registry Metadata
 LABEL org.opencontainers.image.title="Polymarket MCP Server" \
       org.opencontainers.image.description="Model Context Protocol server for Polymarket integration" \
       org.opencontainers.image.version="0.1.0" \
       org.opencontainers.image.authors="Pavel Shklovsky" \
+      org.opencontainers.image.source="https://github.com/pab1it0/polymarket-mcp" \
+      org.opencontainers.image.url="https://github.com/pab1it0/polymarket-mcp" \
       org.opencontainers.image.licenses="MIT"
