@@ -23,28 +23,9 @@ This provides access to Polymarket's prediction markets and market data through 
 The list of tools is configurable, so you can choose which tools you want to make available to the MCP client.
 This is useful if you don't use certain functionality or if you don't want to take up too much of the context window.
 
-## Usage
+## Usage with Claude Desktop
 
-### Docker Usage (Recommended)
-
-Docker provides the most reliable and consistent way to run the Polymarket MCP server across different environments.
-
-#### Building and Running with Docker
-
-To build and run the Docker image locally:
-
-```bash
-# Build the Docker image
-docker build -t polymarket-mcp-server .
-
-# Run the container
-docker run -it --rm \
-  -e GAMMA_API_URL=https://gamma-api.polymarket.com \
-  -e GAMMA_REQUIRES_AUTH=false \
-  polymarket-mcp-server
-```
-
-#### Running with Docker in Claude Desktop
+### Docker Setup
 
 To use the containerized server with Claude Desktop, add this to your Claude Desktop configuration:
 
@@ -70,9 +51,11 @@ To use the containerized server with Claude Desktop, add this to your Claude Des
 }
 ```
 
-### Running with uv (Alternative Method)
+> Note: You'll need to build the Docker image first with `docker build -t polymarket-mcp-server .`
 
-If you prefer not to use Docker, you can use `uv` to run the server directly.
+### UV Setup (Alternative Method)
+
+If you prefer not to use Docker, you can use `uv` to run the server directly:
 
 1. Create and configure a `.env` file in the project root directory:
 
