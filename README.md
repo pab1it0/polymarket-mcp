@@ -1,19 +1,15 @@
 # Polymarket MCP Server
 
-A [Model Context Protocol][mcp] (MCP) server for Polymarket prediction markets platform.
+A [Model Context Protocol][mcp] (MCP) server for Polymarket's Gamma Markets API.
 
 This provides access to Polymarket's prediction markets and market data through standardized MCP interfaces, allowing AI assistants to query market data and analyze prediction markets.
 
 [mcp]: https://modelcontextprotocol.io
 
-## ⚠️ API Update Notice
-
-This server has been updated to use Polymarket's Gamma API instead of the previous CLOB API. The Gamma API provides read-only access to Polymarket market data, events, and historical information.
-
 ## Features
 
 - [x] Market and Event data access
-  - [x] List all available markets and events
+  - [x] List all available markets and events with extensive filtering options
   - [x] Get detailed market and event information
   - [x] Search markets by keyword
   - [x] Get order book data
@@ -214,13 +210,13 @@ When adding new features, please also add corresponding tests.
 
 | Tool | Category | Description |
 | --- | --- | --- |
-| `get_markets` | Market Data | Get a list of all available markets |
+| `get_markets` | Market Data | Get a list of all available markets with comprehensive filtering options |
 | `get_market_by_id` | Market Data | Get detailed information about a specific market |
-| `get_order_book` | Market Data | Get the current order book for a market |
-| `get_recent_trades` | Market Data | Get latest trades for a market |
-| `get_market_history` | Market Data | Get historical market data |
-| `search_markets` | Market Data | Search for markets by keyword |
-| `get_events` | Event Data | Get a list of all available events |
+| `get_order_book` | Market Data | [EXPERIMENTAL] Get the current order book for a market |
+| `get_recent_trades` | Market Data | [EXPERIMENTAL] Get latest trades for a market |
+| `get_market_history` | Market Data | [EXPERIMENTAL] Get historical market data |
+| `search_markets` | Market Data | Search for markets by keyword using slug filtering |
+| `get_events` | Event Data | Get a list of all available events with comprehensive filtering options |
 | `get_event_by_id` | Event Data | Get detailed information about a specific event |
 
 ## License
