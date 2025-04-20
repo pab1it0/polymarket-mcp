@@ -29,28 +29,15 @@ This is useful if you don't use certain functionality or if you don't want to ta
 
 Docker provides the most reliable and consistent way to run the Polymarket MCP server across different environments.
 
-#### Using Pre-built Docker Image
+#### Building and Running with Docker
 
-The easiest way to run the Polymarket MCP server is to use the pre-built Docker image from GitHub Container Registry:
-
-```bash
-docker run -it --rm \
-  -e GAMMA_API_URL=https://gamma-api.polymarket.com \
-  -e GAMMA_REQUIRES_AUTH=false \
-  ghcr.io/pab1it0/polymarket-mcp:latest
-```
-
-#### Building the Docker Image Locally
-
-Alternatively, you can build the Docker image locally:
+To build and run the Docker image locally:
 
 ```bash
+# Build the Docker image
 docker build -t polymarket-mcp-server .
-```
 
-And then run it:
-
-```bash
+# Run the container
 docker run -it --rm \
   -e GAMMA_API_URL=https://gamma-api.polymarket.com \
   -e GAMMA_REQUIRES_AUTH=false \
@@ -72,7 +59,7 @@ To use the containerized server with Claude Desktop, add this to your Claude Des
         "-i",
         "-e", "GAMMA_API_URL",
         "-e", "GAMMA_REQUIRES_AUTH",
-        "ghcr.io/pab1it0/polymarket-mcp:latest"
+        "polymarket-mcp-server"
       ],
       "env": {
         "GAMMA_API_URL": "https://gamma-api.polymarket.com",
@@ -103,10 +90,6 @@ Example `.env` content:
 # Polymarket Gamma API Configuration
 GAMMA_API_URL=https://gamma-api.polymarket.com
 GAMMA_REQUIRES_AUTH=false
-
-# Add authentication credentials if needed in the future
-# API_KEY=
-# API_SECRET=
 ```
 
 2. Add the server configuration to your Claude Desktop configuration:
@@ -131,15 +114,6 @@ GAMMA_REQUIRES_AUTH=false
 ```
 
 > Note: If you see `Error: spawn uv ENOENT` in Claude Desktop, you may need to specify the full path to `uv` or set the environment variable `NO_UV=1` in the configuration.
-
-## Authentication
-
-The Polymarket MCP server with Gamma API currently does not require authentication for read-only operations. However, the framework is in place to support authentication in the future if needed.
-
-If authentication becomes necessary, it will be configured through environment variables:
-
-- `API_KEY`: API key for authentication
-- `API_SECRET`: API secret for authentication 
 
 ## Development
 
