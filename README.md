@@ -90,10 +90,6 @@ Example `.env` content:
 # Polymarket Gamma API Configuration
 GAMMA_API_URL=https://gamma-api.polymarket.com
 GAMMA_REQUIRES_AUTH=false
-
-# Add authentication credentials if needed in the future
-# API_KEY=
-# API_SECRET=
 ```
 
 2. Add the server configuration to your Claude Desktop configuration:
@@ -118,15 +114,6 @@ GAMMA_REQUIRES_AUTH=false
 ```
 
 > Note: If you see `Error: spawn uv ENOENT` in Claude Desktop, you may need to specify the full path to `uv` or set the environment variable `NO_UV=1` in the configuration.
-
-## Authentication
-
-The Polymarket MCP server with Gamma API currently does not require authentication for read-only operations. However, the framework is in place to support authentication in the future if needed.
-
-If authentication becomes necessary, it will be configured through environment variables:
-
-- `API_KEY`: API key for authentication
-- `API_SECRET`: API secret for authentication 
 
 ## Development
 
