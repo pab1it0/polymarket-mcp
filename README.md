@@ -29,28 +29,15 @@ This is useful if you don't use certain functionality or if you don't want to ta
 
 Docker provides the most reliable and consistent way to run the Polymarket MCP server across different environments.
 
-#### Using Pre-built Docker Image
+#### Building and Running with Docker
 
-The easiest way to run the Polymarket MCP server is to use the pre-built Docker image from GitHub Container Registry:
-
-```bash
-docker run -it --rm \
-  -e GAMMA_API_URL=https://gamma-api.polymarket.com \
-  -e GAMMA_REQUIRES_AUTH=false \
-  ghcr.io/pab1it0/polymarket-mcp:latest
-```
-
-#### Building the Docker Image Locally
-
-Alternatively, you can build the Docker image locally:
+To build and run the Docker image locally:
 
 ```bash
+# Build the Docker image
 docker build -t polymarket-mcp-server .
-```
 
-And then run it:
-
-```bash
+# Run the container
 docker run -it --rm \
   -e GAMMA_API_URL=https://gamma-api.polymarket.com \
   -e GAMMA_REQUIRES_AUTH=false \
@@ -72,7 +59,7 @@ To use the containerized server with Claude Desktop, add this to your Claude Des
         "-i",
         "-e", "GAMMA_API_URL",
         "-e", "GAMMA_REQUIRES_AUTH",
-        "ghcr.io/pab1it0/polymarket-mcp:latest"
+        "polymarket-mcp-server"
       ],
       "env": {
         "GAMMA_API_URL": "https://gamma-api.polymarket.com",
