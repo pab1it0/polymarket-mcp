@@ -28,16 +28,16 @@ config = GammaConfig(
     requires_auth=os.environ.get("GAMMA_REQUIRES_AUTH", "false").lower() == "true"
 )
 
-async def make_api_request(endpoint: str, params: Dict[str, Any] = None, method: str = "GET", data: Dict[str, Any] = None) -> Dict[str, Any]:
+async def make_api_request(endpoint: str, params: Dict[str, Any] = None, method: str = "GET", data: Dict[str, Any] = None) -> Any:
     """Make a request to the Polymarket Gamma API."""
     url = f"{config.api_url.rstrip('/')}/{endpoint.lstrip('/')}"
     headers = {"Content-Type": "application/json"}
-    
+
     # Add authentication if needed in the future
     if config.requires_auth:
         # Implementation would depend on Gamma API auth requirements
         pass
-    
+
     async with httpx.AsyncClient() as client:
         if method == "GET":
             response = await client.get(url, headers=headers, params=params or {})
@@ -45,7 +45,7 @@ async def make_api_request(endpoint: str, params: Dict[str, Any] = None, method:
             response = await client.post(url, headers=headers, json=data, params=params or {})
         else:
             raise ValueError(f"Unsupported HTTP method: {method}")
-        
+
         response.raise_for_status()
         return response.json()
 
@@ -178,6 +178,8 @@ async def get_markets(
             params["related_tags"] = related_tags
         
         response = await make_api_request("markets", params=params)
+        if isinstance(response, list):
+            return {"markets": response}
         return response
     except Exception as e:
         sys.stderr.write(f"Error getting markets: {str(e)}\n")
@@ -214,7 +216,10 @@ async def get_order_book(market_id: str, outcome_id: Optional[str] = None) -> Di
         if outcome_id:
             params["outcome_id"] = outcome_id
             
-        return await make_api_request(f"markets/{market_id}/orderbook", params=params)
+        response = await make_api_request(f"markets/{market_id}/orderbook", params=params)
+        if isinstance(response, list):
+            return {"orderbook": response}
+        return response
     except Exception as e:
         sys.stderr.write(f"Error getting order book: {str(e)}\n")
         return {"error": str(e)}
@@ -233,7 +238,10 @@ async def get_recent_trades(market_id: str, limit: int = 50) -> Dict[str, Any]:
     """
     try:
         params = {"limit": limit}
-        return await make_api_request(f"markets/{market_id}/trades", params=params)
+        response = await make_api_request(f"markets/{market_id}/trades", params=params)
+        if isinstance(response, list):
+            return {"trades": response}
+        return response
     except Exception as e:
         sys.stderr.write(f"Error getting recent trades: {str(e)}\n")
         return {"trades": []}
@@ -252,7 +260,10 @@ async def get_market_history(market_id: str, resolution: str = "hour") -> Dict[s
     """
     try:
         params = {"resolution": resolution}
-        return await make_api_request(f"markets/{market_id}/history", params=params)
+        response = await make_api_request(f"markets/{market_id}/history", params=params)
+        if isinstance(response, list):
+            return {"history": response}
+        return response
     except Exception as e:
         sys.stderr.write(f"Error getting market history: {str(e)}\n")
         return {"history": []}
@@ -272,7 +283,10 @@ async def search_markets(query: str, limit: int = 20) -> Dict[str, Any]:
     try:
         # Using the slug parameter for search
         params = {"slug": query, "limit": limit}
-        return await make_api_request("markets", params=params)
+        response = await make_api_request("markets", params=params)
+        if isinstance(response, list):
+            return {"markets": response}
+        return response
     except Exception as e:
         sys.stderr.write(f"Error searching markets: {str(e)}\n")
         return {"markets": []}
@@ -426,7 +440,10 @@ async def get_events(
         elif tag_slug:
             params["tag_slug"] = tag_slug
             
-        return await make_api_request("events", params=params)
+        response = await make_api_request("events", params=params)
+        if isinstance(response, list):
+            return {"events": response}
+        return response
     except Exception as e:
         sys.stderr.write(f"Error getting events: {str(e)}\n")
         return {"events": []}
